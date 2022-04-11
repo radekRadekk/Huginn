@@ -14,74 +14,97 @@ public class LLVMActions extends HuginnBaseListener {
         System.out.println(LLVMGenerator.generate());
     }
 
-	@Override public void exitDeclaration(HuginnParser.DeclarationContext ctx) {
-        String ID = ctx.assignment().ID().getText();
-        boolean isInteger = ctx.INTEGER_NAME() != null;
-        boolean isReal = ctx.REAL_NAME() != null;
+    @Override public void exitDeclaration(HuginnParser.DeclarationContext ctx) {
+        String ID = ctx.ID().getText();
 
-        if (variables.stream().filter(v -> v.name == ID).count() == 1)
-        {
+        if (variables.stream().filter(v -> v.name.equals(ID)).findFirst().isPresent()) {
             raiseError(ctx.getStart().getLine(), "Variable <" + ID + "> is already defined.");
         }
 
-        if (isInteger)
+        if (ctx.INTEGER_NAME() != null && ctx.INTEGER() == null) {
+            raiseError(ctx.getStart().getLine(), "Mismatched declared type and assigned value of variable " + ID + ".");
+        }
+
+        if (ctx.REAL_NAME() != null && ctx.REAL() == null) {
+            raiseError(ctx.getStart().getLine(), "Mismatched declared type and assigned value of variable " + ID + ".");
+        }
+
+        if (ctx.INTEGER() != null)
         {
-            String value = ctx.assignment().INTEGER().getText();
             variables.add(new Variable(ID, VariableType.INTEGER));
             LLVMGenerator.allocateInteger(ID);
-            LLVMGenerator.assignInteger(ID, value);
+            LLVMGenerator.assignInteger(ID, ctx.INTEGER().getText());
         }
-        else if (isReal)
+
+        if (ctx.REAL() != null)
         {
-            String value = ctx.assignment().REAL().getText();
             variables.add(new Variable(ID, VariableType.REAL));
             LLVMGenerator.allocateReal(ID);
-            LLVMGenerator.assignReal(ID, value);
+            LLVMGenerator.assignReal(ID, ctx.REAL().getText());
         }
     }
 
 	@Override public void exitAssignment(HuginnParser.AssignmentContext ctx) {
-        if (ctx.getParent() instanceof HuginnParser.DeclarationContext)
-        {
-            return;
+        String ID = ctx.ID(0).getText();
+
+        Optional<Variable> var = variables.stream().filter(v -> v.name.equals(ID)).findFirst();
+
+        if (!var.isPresent()) {
+            raiseError(ctx.getStart().getLine(), "Variable <" + ID + "> is not defined.");
         }
 
-        String ID = ctx.ID().getText();
-        VariableType variableType = ctx.INTEGER() != null ? VariableType.INTEGER : VariableType.REAL;
-
-        if (variables.stream().filter(v -> v.name == ID).count() != 1)
-        {
-            raiseError(ctx.getStart().getLine(), "Variable <" + ID + "> is not defined. Cannot assign value to it.");
+        if (ctx.INTEGER() != null && var.get().variableType != VariableType.INTEGER) {
+            raiseError(ctx.getStart().getLine(), "Mismatched declared type and assigned value of variable " + ID + ".");
         }
 
-        if (variables.stream().filter(v -> v.name == ID && v.variableType == variableType).count() != 1)
-        {
-            raiseError(ctx.getStart().getLine(), "Variable <" + ID + "> has incorrect type. Cannot assign value to it.");
+        if (ctx.REAL() != null && var.get().variableType != VariableType.REAL) {
+            raiseError(ctx.getStart().getLine(), "Mismatched declared type and assigned value of variable " + ID + ".");
         }
 
-        switch (variableType)
-        {
-            case INTEGER:
-                LLVMGenerator.assignInteger(ID, ctx.INTEGER().getText());
-            break;
+        String sourceID = ctx.ID(1) != null ? ctx.ID(1).getText() : "";
+        Optional<Variable> sourceVar = variables.stream().filter(v -> v.name.equals(sourceID)).findFirst();
+        if (!sourceID.equals("") && !sourceVar.isPresent()) {
+            raiseError(ctx.getStart().getLine(), "Variable <" + sourceID + "> is not defined.");
+        }
 
-            case REAL:
-                LLVMGenerator.assignReal(ID, ctx.REAL().getText());
-            break;
+        if (sourceVar.isPresent() && sourceVar.get().variableType != var.get().variableType) {
+            raiseError(ctx.getStart().getLine(), "Mismatched types of " + ID + " and " + sourceID + ".");
+        }
+
+        if (ctx.INTEGER() != null) {
+            LLVMGenerator.assignInteger(ID, ctx.INTEGER().getText());
+        }
+
+        if (ctx.REAL() != null) {
+            LLVMGenerator.assignReal(ID, ctx.REAL().getText());
+        }
+
+        if (sourceVar.isPresent()) {
+            switch (sourceVar.get().variableType)
+            {
+                case INTEGER:
+                    LLVMGenerator.loadInteger(sourceVar.get().name);
+                    LLVMGenerator.assignInteger(ID, "%" + (LLVMGenerator.reg - 1));
+                break;
+
+                case REAL:
+                    LLVMGenerator.loadReal(sourceVar.get().name);
+                    LLVMGenerator.assignReal(ID, "%" + (LLVMGenerator.reg - 1));
+                break;
+            }
         }
     }
 
 	@Override public void exitPrint(HuginnParser.PrintContext ctx) {
         String ID = ctx.ID().getText();
+    
+        Optional<Variable> var = variables.stream().filter(v -> v.name.equals(ID)).findFirst();
 
-        Optional<Variable> variable = variables.stream().filter(v -> v.name == ID).findFirst();
-
-        if (!variable.isPresent())
-        {
+        if (!var.isPresent()) {
             raiseError(ctx.getStart().getLine(), "Variable <" + ID + "> is not defined.");
         }
 
-        switch (variable.get().variableType)
+        switch (var.get().variableType)
         {
             case INTEGER:
                 LLVMGenerator.printInteger(ID);

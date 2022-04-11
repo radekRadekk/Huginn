@@ -1,107 +1,34 @@
 grammar Huginn;
 
 prog
-    : statement* EOF
+    : statement*
     ;
 
 statement
-    : declaration | assignment | print | read
-    ;
-
-declaration
-    : DECLARE (INTEGER_NAME | REAL_NAME) assignment
-    ;
-
-assignment
-    : ID ASSIGN (INTEGER | REAL) SEMICOLON
-    ;
-
-print
-    : SELECT ID SEMICOLON
-    ;
-
-read
-    : READ_TO ID SEMICOLON
-    ;
-
-fragment DIGIT
-    : ('0' .. '9')
-    ;
-
-fragment NON_ZERO_DIGIT
-    : ('1' .. '9')
-    ;
-
-fragment ZERO
-    : '0'
-    ;
-
-fragment LETTER
-    : ('a' .. 'z') | ('A' .. 'Z')
-    ;
-
-fragment MINUS
-    : '-'
+    : 'DECLARE' (INTEGER_NAME | REAL_NAME) ID (INTEGER | REAL) ';'      #declaration
+    | 'ASSIGN' ID (INTEGER | REAL | ID) ';'                             #assignment
+    | 'SELECT' (INTEGER | REAL | ID) ';'                                #print
+    | 'READ_TO' ID ';'                                                  #read
     ;
 
 INTEGER
-    : ZERO | MINUS? NON_ZERO_DIGIT DIGIT*
-    ;
-
-ID
-    : LETTER+
+    : ('0'..'9')+
     ;
 
 REAL
-    : ( ZERO | NON_ZERO_DIGIT DIGIT* ) '.' DIGIT+
+    : ('0'..'9')+'.'('0'..'9')+
     ;
 
 INTEGER_NAME
-    : 'INTEGER' | 'integer'
+    : 'INTEGER'
     ;
 
 REAL_NAME
-    : 'REAL' | 'real'
+    : 'REAL'
     ;
 
-DECLARE
-    : 'DECLARE' | 'declare'
-    ;
-
-ASSIGN
-    : 'ASSIGN' | 'assign'
-    ;
-
-ADD
-    : 'ADD' | 'add'
-    ;
-
-SUB
-    : 'SUB' | 'sub'
-    ;
-
-MUL
-    : 'MUL' | 'mul'
-    ;
-
-DIV
-    : 'DIV' | 'div'
-    ;
-
-MOD
-    : 'MOD' | 'mod'
-    ;
-
-SELECT
-    : 'SELECT' | 'select'
-    ;
-
-READ_TO
-    : 'READ_TO' | 'read_to'
-    ;
-
-SEMICOLON
-    : ';'
+ID
+    : ('a'..'z' | 'A'..'Z')+
     ;
 
 COMMENT
@@ -111,4 +38,3 @@ COMMENT
 WS
     : [ \t\r\n] -> skip
     ;
-
