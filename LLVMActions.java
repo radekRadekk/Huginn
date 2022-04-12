@@ -116,7 +116,26 @@ public class LLVMActions extends HuginnBaseListener {
         }
     }
 
-	@Override public void exitRead(HuginnParser.ReadContext ctx) { }
+	@Override public void exitRead(HuginnParser.ReadContext ctx) {
+        String ID = ctx.ID().getText();
+    
+        Optional<Variable> var = variables.stream().filter(v -> v.name.equals(ID)).findFirst();
+
+        if (!var.isPresent()) {
+            raiseError(ctx.getStart().getLine(), "Variable <" + ID + "> is not defined.");
+        }
+
+        switch (var.get().variableType)
+        {
+            case INTEGER:
+                LLVMGenerator.readInteger(ID);
+            break;
+
+            case REAL:
+                LLVMGenerator.readReal(ID);
+            break;
+        }
+    }
 
     private void raiseError(int line, String msg) {
        System.err.println("Error in line " + line + ", " + msg);
