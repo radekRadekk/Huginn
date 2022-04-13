@@ -67,4 +67,14 @@ class LLVMGenerator {
       main_text += "%" + reg + " = call i32 (i8*, ...) @__isoc99_scanf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strsd, i32 0, i32 0), double* %" + id + ")\n";
       reg++;
    }
+
+   public static void addIntegers(String value1, String value2) {
+      main_text += "%" + reg + " = add i32 " + value1 + ", " + value2 + "\n";
+      reg++;
+   }
+
+   public static void addReals(String value1, String value2) {
+      main_text += "%" + reg + " = fadd double " + value1 + ", " + value2 + "\n";
+      reg++;
+   }
 }

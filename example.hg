@@ -1,7 +1,11 @@
-DECLARE INTEGER x 0;
+DECLARE INTEGER x 1;
+DECLARE REAL y 2.2;
 // ASSIGN x 24.1;
 // DECLARE REAL y 225.0;
 // ASSIGN x y;
 // SELECT x;
-READ_TO x;
-SELECT x;
+// READ_TO x;
+// SELECT x;
+
+ASSIGN y [0.1 + 0.2 + y + 0.3];
+SELECT y;

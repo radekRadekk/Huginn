@@ -3,7 +3,7 @@ import java.util.*;
 public class LLVMActions extends HuginnBaseListener {
 
     HashSet<Variable> variables = new HashSet<Variable>();
-    Stack<String> stack = new Stack<String>();
+    Stack<Variable> stack = new Stack<Variable>();
 
     public LLVMActions()
     {
@@ -61,6 +61,10 @@ public class LLVMActions extends HuginnBaseListener {
             raiseError(ctx.getStart().getLine(), "Mismatched declared type and assigned value of variable " + ID + ".");
         }
 
+        if (ctx.expression() != null && stack.peek().variableType != var.get().variableType) {
+            raiseError(ctx.getStart().getLine(), "Mismatched declared type and assigned value of variable " + ID + ".");
+        }
+
         String sourceID = ctx.ID(1) != null ? ctx.ID(1).getText() : "";
         Optional<Variable> sourceVar = variables.stream().filter(v -> v.name.equals(sourceID)).findFirst();
         if (!sourceID.equals("") && !sourceVar.isPresent()) {
@@ -90,6 +94,20 @@ public class LLVMActions extends HuginnBaseListener {
                 case REAL:
                     LLVMGenerator.loadReal(sourceVar.get().name);
                     LLVMGenerator.assignReal(ID, "%" + (LLVMGenerator.reg - 1));
+                break;
+            }
+        }
+
+        if (ctx.expression() != null) {
+            Variable storedVariable = stack.pop();
+            switch (storedVariable.variableType)
+            {
+                case INTEGER:
+                    LLVMGenerator.assignInteger(ID, "%" + storedVariable.name);
+                break;
+
+                case REAL:
+                    LLVMGenerator.assignReal(ID, "%" + storedVariable.name);
                 break;
             }
         }
@@ -134,6 +152,137 @@ public class LLVMActions extends HuginnBaseListener {
             case REAL:
                 LLVMGenerator.readReal(ID);
             break;
+        }
+    }
+
+    @Override public void exitExpression_base_add(HuginnParser.Expression_base_addContext ctx) {
+        if (ctx.expression_base() == null) {
+            if (ctx.INTEGER().size() == 2) {
+                LLVMGenerator.addIntegers(ctx.INTEGER(0).getText(), ctx.INTEGER(1).getText());
+                stack.push(new Variable("" + (LLVMGenerator.reg - 1), VariableType.INTEGER));
+            }
+
+            if (ctx.REAL().size() == 2) {
+                LLVMGenerator.addReals(ctx.REAL(0).getText(), ctx.REAL(1).getText());
+                stack.push(new Variable("" + (LLVMGenerator.reg - 1), VariableType.REAL));                
+            }
+
+            if (ctx.ID().size() == 1 && ctx.INTEGER().size() == 1) {
+                Optional<Variable> var = variables.stream().filter(v -> v.name.equals(ctx.ID(0).getText())).findFirst();
+
+                if (!var.isPresent()) {
+                    raiseError(ctx.getStart().getLine(), "Variable <" + ctx.ID(0).getText() + "> is not defined.");
+                }
+
+                if (var.get().variableType != VariableType.INTEGER) {
+                    raiseError(ctx.getStart().getLine(), "Mismatched types in the expression. <" + var.get().name + "> must be INTEGER.");
+                }
+
+                LLVMGenerator.loadInteger(var.get().name);
+                LLVMGenerator.addIntegers(ctx.INTEGER(0).getText(), "%" + (LLVMGenerator.reg - 1));
+                stack.push(new Variable("" + (LLVMGenerator.reg - 1), VariableType.INTEGER));
+            }
+
+            if (ctx.ID().size() == 1 && ctx.REAL().size() == 1) {
+                Optional<Variable> var = variables.stream().filter(v -> v.name.equals(ctx.ID(0).getText())).findFirst();
+
+                if (!var.isPresent()) {
+                    raiseError(ctx.getStart().getLine(), "Variable <" + ctx.ID(0).getText() + "> is not defined.");
+                }
+
+                if (var.get().variableType != VariableType.REAL) {
+                    raiseError(ctx.getStart().getLine(), "Mismatched types in the expression. <" + var.get().name + "> must be REAL.");
+                }
+
+                LLVMGenerator.loadReal(var.get().name);
+                LLVMGenerator.addReals(ctx.REAL(0).getText(), "%" + (LLVMGenerator.reg - 1));
+                stack.push(new Variable("" + (LLVMGenerator.reg - 1), VariableType.REAL));
+            }
+
+            if (ctx.ID().size() == 2) {
+                Optional<Variable> var0 = variables.stream().filter(v -> v.name.equals(ctx.ID(0).getText())).findFirst();
+                Optional<Variable> var1 = variables.stream().filter(v -> v.name.equals(ctx.ID(1).getText())).findFirst();
+
+                if (!var0.isPresent()) {
+                    raiseError(ctx.getStart().getLine(), "Variable <" + ctx.ID(0).getText() + "> is not defined.");
+                }
+
+                if (!var1.isPresent()) {
+                    raiseError(ctx.getStart().getLine(), "Variable <" + ctx.ID(1).getText() + "> is not defined.");
+                }
+
+                if (var0.get().variableType != var1.get().variableType) {
+                    raiseError(ctx.getStart().getLine(), "Mismatched types in expression. Variables <" + ctx.ID(0).getText() + "> and <" + ctx.ID(1).getText() + "> have different types.");
+                }
+
+                switch (var0.get().variableType) {
+                    case INTEGER:
+                        LLVMGenerator.loadInteger(var0.get().name);
+                        LLVMGenerator.loadInteger(var1.get().name);
+                        LLVMGenerator.addIntegers("%" + (LLVMGenerator.reg - 2), "%" + (LLVMGenerator.reg - 1));
+                        stack.push(new Variable("" + (LLVMGenerator.reg - 1), VariableType.INTEGER));
+                    break;
+
+                    case REAL:
+                        LLVMGenerator.loadReal(var0.get().name);
+                        LLVMGenerator.loadReal(var1.get().name);
+                        LLVMGenerator.addReals("%" + (LLVMGenerator.reg - 2), "%" + (LLVMGenerator.reg - 1));
+                        stack.push(new Variable("" + (LLVMGenerator.reg - 1), VariableType.REAL));
+                    break;
+                }
+            }
+        }
+        else
+        {
+            Variable storedVariable = stack.pop();
+
+            if (ctx.INTEGER(0) != null) {
+                if (storedVariable.variableType != VariableType.INTEGER) {
+                    raiseError(ctx.getStart().getLine(), "Mismatched types in expression.");
+                }
+
+                LLVMGenerator.addIntegers(ctx.INTEGER(0).getText(), "%" + storedVariable.name);
+                stack.push(new Variable("" + (LLVMGenerator.reg - 1), VariableType.INTEGER));
+            }
+
+            if (ctx.REAL(0) != null) {
+                if (storedVariable.variableType != VariableType.REAL) {
+                    raiseError(ctx.getStart().getLine(), "Mismatched types in expression.");
+                }
+
+                LLVMGenerator.addReals(ctx.REAL(0).getText(), "%" + storedVariable.name);
+                stack.push(new Variable("" + (LLVMGenerator.reg - 1), VariableType.REAL));
+            }
+
+            if (ctx.ID(0) != null) {
+                Optional<Variable> var = variables.stream().filter(v -> v.name.equals(ctx.ID(0).getText())).findFirst();
+
+                if (!var.isPresent()) {
+                    raiseError(ctx.getStart().getLine(), "Variable <" + ctx.ID(0).getText() + "> is not defined.");
+                }
+
+                switch (storedVariable.variableType) {
+                    case INTEGER:
+                        if (var.get().variableType != VariableType.INTEGER) {
+                            raiseError(ctx.getStart().getLine(), "Mismatched types in the expression. <" + var.get().name + "> must be INTEGER.");
+                        }
+
+                        LLVMGenerator.loadInteger(var.get().name);
+                        LLVMGenerator.addIntegers("%" + storedVariable.name, "%" + (LLVMGenerator.reg - 1));
+                        stack.push(new Variable("" + (LLVMGenerator.reg - 1), VariableType.INTEGER));
+                    break;
+
+                    case REAL:
+                        if (var.get().variableType != VariableType.REAL) {
+                            raiseError(ctx.getStart().getLine(), "Mismatched types in the expression. <" + var.get().name + "> must be REAL.");
+                        }
+
+                        LLVMGenerator.loadReal(var.get().name);
+                        LLVMGenerator.addReals("%" + storedVariable.name, "%" + (LLVMGenerator.reg - 1));
+                        stack.push(new Variable("" + (LLVMGenerator.reg - 1), VariableType.REAL));
+                    break;
+                }
+            }
         }
     }
 
