@@ -77,4 +77,15 @@ class LLVMGenerator {
       main_text += "%" + reg + " = fadd double " + value1 + ", " + value2 + "\n";
       reg++;
    }
+
+   public static void mulIntegers(String value1, String value2) {
+      main_text += "%" + reg + " = mul i32 " + value1 + ", " + value2 + "\n";
+      reg++;
+   }
+
+   public static void mulReals(String value1, String value2) {
+      main_text += "%" + reg + " = fmul double " + value1 + ", " + value2 + "\n";
+      reg++;
+   }
+
 }

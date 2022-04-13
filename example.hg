@@ -7,5 +7,6 @@ DECLARE REAL y 2.2;
 // READ_TO x;
 // SELECT x;
 
-ASSIGN y [0.1 + 0.2 + y + 0.3];
-SELECT y;
+ASSIGN x 10;
+ASSIGN x [24 * x * 2];
+SELECT x;
