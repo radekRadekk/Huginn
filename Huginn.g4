@@ -9,6 +9,11 @@ statement
     | 'ASSIGN' ID (INTEGER | REAL | BOOL | ID | expression) ';'                         #assignment
     | 'SELECT' (INTEGER | REAL | BOOL | ID) ';'                                         #print
     | 'READ_TO' ID ';'                                                                  #read
+    | 'IF' (ID | BOOL) block ';'                                                        #if
+    ;
+
+block
+    : '[' statement* ']'
     ;
 
 expression

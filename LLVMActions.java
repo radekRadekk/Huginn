@@ -531,6 +531,31 @@ public class LLVMActions extends HuginnBaseListener {
         }
     }
 
+    @Override public void enterIf(HuginnParser.IfContext ctx) {
+        if (ctx.BOOL() != null) {
+            LLVMGenerator.ifStart(ctx.BOOL().getText());
+        }
+
+        if (ctx.ID() != null) {
+            Optional<Variable> var = variables.stream().filter(v -> v.name.equals(ctx.ID().getText())).findFirst();
+
+            if (!var.isPresent()) {
+                raiseError(ctx.getStart().getLine(), "Variable <" + ctx.ID().getText() + "> is not defined.");
+            }
+
+            if (var.get().variableType != VariableType.BOOL) {
+                raiseError(ctx.getStart().getLine(), "Mismatched types in the expression. <" + var.get().name + "> must be BOOL.");
+            }
+
+            LLVMGenerator.loadBool(var.get().name);
+            LLVMGenerator.ifStart("%" + (LLVMGenerator.reg - 1));
+        }
+    }
+
+	@Override public void exitIf(HuginnParser.IfContext ctx) {
+        LLVMGenerator.ifEnd();
+    }
+
     private void raiseError(int line, String msg) {
        System.err.println("Error in line " + line + ", " + msg);
        System.exit(1);

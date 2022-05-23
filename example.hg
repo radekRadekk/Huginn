@@ -15,8 +15,18 @@
 
 
 
-DECLARE BOOL b true;
-DECLARE BOOL c false;
-ASSIGN c b;
+DECLARE BOOL b false;
+DECLARE INTEGER one 1;
+DECLARE INTEGER two 2;
 
-SELECT c;
+ASSIGN b true;
+
+IF true [
+    SELECT one;
+
+    IF b [
+        SELECT two;
+    ];
+];
+
+SELECT two;

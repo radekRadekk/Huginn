@@ -1,7 +1,12 @@
+import java.util.*;
+
 class LLVMGenerator {
    static String header_text = "";
    static String main_text = "";
    static int reg = 1;
+   static int br = 0;
+
+   static Stack<Integer> br_stack = new Stack<>();
 
    public static String generate() {
       String text = "";
@@ -128,4 +133,16 @@ class LLVMGenerator {
       reg++;
    }
 
+   static void ifStart(String conditionVariable) {
+      br++;
+      main_text += "br i1" + conditionVariable + ", label %true" + br + ", label %false" + br + "\n";
+      main_text += "true" + br + ":\n";
+      br_stack.push(br);
+   }
+
+   static void ifEnd() {
+      int b = br_stack.pop();
+      main_text += "br label %false" + b + "\n";
+      main_text += "false" + b + ":\n";
+   }
 }
