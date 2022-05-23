@@ -30,6 +30,10 @@ public class LLVMActions extends HuginnBaseListener {
             raiseError(ctx.getStart().getLine(), "Mismatched declared type and assigned value of variable " + ID + ".");
         }
 
+        if (ctx.BOOL_NAME() != null && ctx.BOOL() == null) {
+            raiseError(ctx.getStart().getLine(), "Mismatched declared type and assigned value of variable " + ID + ".");
+        }
+
         if (ctx.INTEGER() != null)
         {
             variables.add(new Variable(ID, VariableType.INTEGER));
@@ -42,6 +46,13 @@ public class LLVMActions extends HuginnBaseListener {
             variables.add(new Variable(ID, VariableType.REAL));
             LLVMGenerator.allocateReal(ID);
             LLVMGenerator.assignReal(ID, ctx.REAL().getText());
+        }
+
+        if (ctx.BOOL() != null)
+        {
+            variables.add(new Variable(ID, VariableType.BOOL));
+            LLVMGenerator.allocateBool(ID);
+            LLVMGenerator.assignBool(ID, ctx.BOOL().getText());
         }
     }
 
@@ -59,6 +70,10 @@ public class LLVMActions extends HuginnBaseListener {
         }
 
         if (ctx.REAL() != null && var.get().variableType != VariableType.REAL) {
+            raiseError(ctx.getStart().getLine(), "Mismatched declared type and assigned value of variable " + ID + ".");
+        }
+
+        if (ctx.BOOL() != null && var.get().variableType != VariableType.BOOL) {
             raiseError(ctx.getStart().getLine(), "Mismatched declared type and assigned value of variable " + ID + ".");
         }
 
@@ -84,6 +99,10 @@ public class LLVMActions extends HuginnBaseListener {
             LLVMGenerator.assignReal(ID, ctx.REAL().getText());
         }
 
+        if (ctx.BOOL() != null) {
+            LLVMGenerator.assignBool(ID, ctx.BOOL().getText());
+        }
+
         if (sourceVar.isPresent()) {
             switch (sourceVar.get().variableType)
             {
@@ -95,6 +114,11 @@ public class LLVMActions extends HuginnBaseListener {
                 case REAL:
                     LLVMGenerator.loadReal(sourceVar.get().name);
                     LLVMGenerator.assignReal(ID, "%" + (LLVMGenerator.reg - 1));
+                break;
+
+                case BOOL:
+                    LLVMGenerator.loadBool(sourceVar.get().name);
+                    LLVMGenerator.assignBool(ID, "%" + (LLVMGenerator.reg - 1));
                 break;
             }
         }
@@ -109,6 +133,10 @@ public class LLVMActions extends HuginnBaseListener {
 
                 case REAL:
                     LLVMGenerator.assignReal(ID, "%" + storedVariable.name);
+                break;
+
+                case BOOL:
+                    LLVMGenerator.assignBool(ID, "%" + storedVariable.name);
                 break;
             }
         }
@@ -131,6 +159,10 @@ public class LLVMActions extends HuginnBaseListener {
 
             case REAL:
                 LLVMGenerator.printReal(ID);
+            break;
+
+            case BOOL:
+                LLVMGenerator.printBool(ID);
             break;
         }
     }
@@ -517,6 +549,7 @@ public class LLVMActions extends HuginnBaseListener {
 
     private enum VariableType {
         INTEGER,
-        REAL
+        REAL,
+        BOOL
     }
 }

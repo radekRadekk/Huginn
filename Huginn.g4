@@ -5,10 +5,10 @@ prog
     ;
 
 statement
-    : 'DECLARE' (INTEGER_NAME | REAL_NAME) ID (INTEGER | REAL) ';'      #declaration
-    | 'ASSIGN' ID (INTEGER | REAL | ID | expression) ';'                #assignment
-    | 'SELECT' (INTEGER | REAL | ID) ';'                                #print
-    | 'READ_TO' ID ';'                                                  #read
+    : 'DECLARE' (INTEGER_NAME | REAL_NAME | BOOL_NAME) ID (INTEGER | REAL | BOOL) ';'   #declaration
+    | 'ASSIGN' ID (INTEGER | REAL | BOOL | ID | expression) ';'                         #assignment
+    | 'SELECT' (INTEGER | REAL | BOOL | ID) ';'                                         #print
+    | 'READ_TO' ID ';'                                                                  #read
     ;
 
 expression
@@ -30,12 +30,20 @@ REAL
     : ('0'..'9')+'.'('0'..'9')+
     ;
 
+BOOL
+    : ('true' | 'false')
+    ;
+
 INTEGER_NAME
     : 'INTEGER'
     ;
 
 REAL_NAME
     : 'REAL'
+    ;
+
+BOOL_NAME
+    : 'BOOL'
     ;
 
 ID

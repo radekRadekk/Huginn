@@ -1,6 +1,6 @@
-DECLARE INTEGER x 1;
-DECLARE REAL y 2.2;
-DECLARE REAL z 3.0;
+// DECLARE INTEGER x 1;
+// DECLARE REAL y 2.2;
+// DECLARE REAL z 3.0;
 // ASSIGN x 24.1;
 // DECLARE REAL y 225.0;
 // ASSIGN x y;
@@ -8,7 +8,15 @@ DECLARE REAL z 3.0;
 // READ_TO x;
 // SELECT x;
 
-ASSIGN y 10.0;
+// ASSIGN y 10.0;
 
-ASSIGN y [10.0 / 2.0];
-SELECT y;
+// ASSIGN y [10.0 / 2.0];
+// SELECT y;
+
+
+
+DECLARE BOOL b true;
+DECLARE BOOL c false;
+ASSIGN c b;
+
+SELECT c;

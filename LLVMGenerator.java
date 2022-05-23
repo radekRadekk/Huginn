@@ -26,12 +26,20 @@ class LLVMGenerator {
       main_text += "%" + id + " = alloca double\n";
    }
 
+   public static void allocateBool(String id) {
+      main_text += "%" + id + " = alloca i1\n";
+   }
+
    public static void assignInteger(String id, String value) {
       main_text += "store i32 " + value + ", i32* %" + id + "\n";
    }
 
    public static void assignReal(String id, String value) {
       main_text += "store double " + value + ", double* %" + id + "\n";
+   }
+
+   public static void assignBool(String id, String value) {
+      main_text += "store i1 " + value + ", i1* %" + id + "\n";
    }
 
    public static void loadInteger(String id) {
@@ -41,6 +49,11 @@ class LLVMGenerator {
 
    public static void loadReal(String id) {
       main_text += "%" + reg + "= load double, double* %" + id + "\n";
+      reg++;
+   }
+
+   public static void loadBool(String id) {
+      main_text += "%" + reg + "= load i1, i1* %" + id + "\n";
       reg++;
    }
 
@@ -55,6 +68,13 @@ class LLVMGenerator {
       main_text += "%" + reg + "= load double, double* %" + id + "\n";
       reg++;
       main_text += "%" + reg + " = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strpd, i32 0, i32 0), double %" + (reg-1) + ")\n";
+      reg++;
+   }
+
+   public static void printBool(String id) {
+      main_text += "%" + reg + "= load i1, i1* %" + id + "\n";
+      reg++;
+      main_text += "%" + reg + " = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strpi, i1 0, i1 0), i1 %" + (reg-1) + ")\n";
       reg++;
    }
 
