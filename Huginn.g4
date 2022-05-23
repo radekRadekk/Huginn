@@ -16,8 +16,10 @@ expression
     ;
 
 expression_base
-    : (ID | INTEGER | REAL) ADD (ID | INTEGER | REAL | expression_base) #expression_base_add
-    | (ID | INTEGER | REAL) MUL (ID | INTEGER | REAL | expression_base) #expression_base_mul
+    : (ID | INTEGER | REAL) ADD (ID | INTEGER | REAL ) #expression_base_add
+    | (ID | INTEGER | REAL) MUL (ID | INTEGER | REAL ) #expression_base_mul
+    | (ID | INTEGER | REAL) SUB (ID | INTEGER | REAL ) #expression_base_sub
+    | (ID | INTEGER | REAL) DIV (ID | INTEGER | REAL ) #expression_base_div
     ;
 
 INTEGER
@@ -37,7 +39,7 @@ REAL_NAME
     ;
 
 ID
-    : ('a'..'z' | 'A'..'Z')+
+    : ('a'..'z' | '_')+
     ;
 
 ADD
@@ -50,6 +52,22 @@ SUB
 
 MUL
     : '*'
+    ;
+
+DIV
+    : '/'
+    ;
+
+EQ
+    : '==='
+    ;
+
+GT
+    : '>'
+    ;
+
+LT
+    : '<'
     ;
 
 COMMENT

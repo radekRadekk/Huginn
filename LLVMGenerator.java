@@ -88,4 +88,24 @@ class LLVMGenerator {
       reg++;
    }
 
+   public static void subIntegers(String value1, String value2) {
+      main_text += "%" + reg + " = sub i32 " + value1 + ", " + value2 + "\n";
+      reg++;
+   }
+
+   public static void subReals(String value1, String value2) {
+      main_text += "%" + reg + " = fsub double " + value1 + ", " + value2 + "\n";
+      reg++;
+   }
+
+   public static void divIntegers(String value1, String value2) {
+      main_text += "%" + reg + " = div i32 " + value1 + ", " + value2 + "\n";
+      reg++;
+   }
+
+   public static void divReals(String value1, String value2) {
+      main_text += "%" + reg + " = fdiv double " + value1 + ", " + value2 + "\n";
+      reg++;
+   }
+
 }
