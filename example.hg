@@ -14,19 +14,9 @@
 // SELECT y;
 
 
-
-DECLARE BOOL b false;
-DECLARE INTEGER one 1;
-DECLARE INTEGER two 2;
-
-ASSIGN b true;
-
-IF true [
-    SELECT one;
-
-    IF b [
-        SELECT two;
-    ];
+testowa_funkcja()[
+    DECLARE INTEGER xd 2137;
+    SELECT xd;
 ];
 
-SELECT two;
+CALL testowa_funkcja();

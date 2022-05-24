@@ -1,7 +1,12 @@
 grammar Huginn;
 
 prog
-    : statement*
+    : base_statement*
+    ;
+
+base_statement
+    : statement
+    | function_def
     ;
 
 statement
@@ -10,6 +15,19 @@ statement
     | 'SELECT' (INTEGER | REAL | BOOL | ID) ';'                                         #print
     | 'READ_TO' ID ';'                                                                  #read
     | 'IF' (ID | BOOL) block ';'                                                        #if
+    | 'CALL' ID '(' parameter* ')' ';'                                                  #function_call
+    ;
+
+parameter
+    : ID '|'
+    ;
+
+function_def
+    : ID '(' parameter_def* ')' block ';'
+    ;
+
+parameter_def
+    : (INTEGER | REAL | BOOL) ID '|'
     ;
 
 block

@@ -5,6 +5,7 @@ public class LLVMActions extends HuginnBaseListener {
 
     HashSet<Variable> variables = new HashSet<Variable>();
     Stack<Variable> stack = new Stack<Variable>();
+    HashSet<Function> functions = new HashSet<Function>();
 
     public LLVMActions()
     {
@@ -556,6 +557,41 @@ public class LLVMActions extends HuginnBaseListener {
         LLVMGenerator.ifEnd();
     }
 
+
+
+    @Override public void enterFunction_def(HuginnParser.Function_defContext ctx) {
+        Optional<Function> fun = functions.stream().filter(f -> f.name.equals(ctx.ID().getText())).findFirst();
+        if (fun.isPresent()) {
+            raiseError(ctx.getStart().getLine(), "Function <" + ctx.ID().getText() + "> is already defined.");
+        }
+
+        var f = new Function(ctx.ID().getText());
+        for (var p: ctx.parameter_def()) {
+            VariableType vt = VariableType.BOOL;
+
+            if (p.INTEGER() != null)
+                vt = VariableType.INTEGER;
+            if (p.REAL() != null)
+                vt = VariableType.REAL;
+            if (p.BOOL() != null)
+                vt = VariableType.BOOL;
+        
+            f.parameters.add(new Parameter(p.ID().getText(), vt));
+        }
+
+        LLVMGenerator.functionStart(ctx.ID().getText());
+    }
+
+    @Override public void exitFunction_def(HuginnParser.Function_defContext ctx) {
+        LLVMGenerator.functionEnd();
+    }
+
+    @Override public void exitFunction_call(HuginnParser.Function_callContext ctx) {
+        //TODO checks etc.
+        LLVMGenerator.call(ctx.ID().getText());
+    }
+
+
     private void raiseError(int line, String msg) {
        System.err.println("Error in line " + line + ", " + msg);
        System.exit(1);
@@ -576,5 +612,27 @@ public class LLVMActions extends HuginnBaseListener {
         INTEGER,
         REAL,
         BOOL
+    }
+
+    private class Function {
+        public String name;
+        public ArrayList<Parameter> parameters;
+
+        public Function(String name)
+        {
+            this.name = name;
+            this.parameters = new ArrayList<Parameter>();
+        }
+    }
+
+    private class Parameter {
+        public String name;
+        public VariableType variableType;
+
+        public Parameter(String name, VariableType variableType)
+        {
+            this.name = name;
+            this.variableType = variableType;
+        }
     }
 }

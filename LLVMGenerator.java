@@ -5,6 +5,8 @@ class LLVMGenerator {
    static String main_text = "";
    static int reg = 1;
    static int br = 0;
+   static String buffer = "";
+   static int main_reg = 1;
 
    static Stack<Integer> br_stack = new Stack<>();
 
@@ -144,5 +146,25 @@ class LLVMGenerator {
       int b = br_stack.pop();
       main_text += "br label %false" + b + "\n";
       main_text += "false" + b + ":\n";
+   }
+
+   static void functionStart(String id){
+      buffer = main_text;
+      main_reg = reg;
+      main_text = "define i32 @"+id+"() nounwind {\n";
+      reg = 1;
+   }
+
+   static void functionEnd(){
+      main_text += "ret i32 %" + (reg-1) + "\n"; 
+      main_text += "}\n";
+      header_text += main_text;
+      main_text = buffer;
+      reg = main_reg;
+   }
+
+   static void call(String id){
+      main_text += "%" + reg + " = call i32 @" + id + "()\n";
+      reg++;
    }
 }
