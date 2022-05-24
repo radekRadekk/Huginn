@@ -16,7 +16,24 @@
 
 testowa_funkcja()[
     DECLARE INTEGER xd 2137;
-    SELECT xd;
+    IF true[
+        SELECT xd;
+   ];
 ];
 
 CALL testowa_funkcja();
+
+DECLARE INTEGER z 2137;
+IF true[
+    DECLARE REAL z 5.0;
+    SELECT z;
+    ASSIGN z 7.0;
+    SELECT z;
+    IF true[
+        ASSIGN z [8.5 - 6.0];
+        SELECT z;
+    ];
+    SELECT z;
+];
+
+SELECT z;
