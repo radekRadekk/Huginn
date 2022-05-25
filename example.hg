@@ -15,7 +15,7 @@
 
 
 // testowa_funkcja()[
-//     DECLARE INTEGER xd 2137;
+//     DECLARE INTEGER xd 21;
 //     IF true[
 //         SELECT xd;
 //    ];
@@ -23,7 +23,7 @@
 // 
 // CALL testowa_funkcja();
 // 
-// DECLARE INTEGER z 2137;
+// DECLARE INTEGER z 21;
 // IF true[
 //     DECLARE REAL z 5.0;
 //     SELECT z;
@@ -38,17 +38,51 @@
 // 
 // SELECT z;
 
-funkcja_param(INTEGER q | REAL r |)[
-    SELECT q;
-    SELECT r;
-    ASSIGN q 2137;
-    ASSIGN r [r * r];
+// funkcja_param(INTEGER q | REAL r |)[
+//     SELECT q;
+//     SELECT r;
+//     ASSIGN q 21;
+//     ASSIGN r [r * r];
+// ];
+// 
+// DECLARE INTEGER xx 12;
+// DECLARE REAL yy 1.2;
+// 
+// CALL funkcja_param(xx | yy|);
+// 
+// SELECT xx;
+// SELECT yy;
+
+// DECLARE REAL x 11.0;
+// 
+// IF true [
+//     DECLARE INTEGER x 10;
+//     IF true [
+//         SELECT x;
+//     ];
+// ];
+// 
+// SELECT x;
+
+DECLARE REAL mul_result 0.0;
+DECLARE REAL a 6.0;
+ 
+mul_four(REAL num | REAL result |)[
+     ASSIGN result [num * 4.0];
 ];
 
-DECLARE INTEGER xx 12;
-DECLARE REAL yy 1.2;
+CALL mul_four(a | mul_result |);
+ 
+SELECT mul_result;
 
-CALL funkcja_param(xx | yy|);
+// DECLARE BOOL bbb true;
+// DECLARE INTEGER a 5;
+// 
+// IF bbb [
+//     SELECT a;
+//     IF false [
+// 
+//     ];
+// ];
 
-SELECT xx;
-SELECT yy;
+
