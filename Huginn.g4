@@ -27,7 +27,7 @@ function_def
     ;
 
 parameter_def
-    : (INTEGER | REAL | BOOL) ID '|'
+    : (INTEGER_NAME | REAL_NAME | BOOL_NAME) ID '|'
     ;
 
 block

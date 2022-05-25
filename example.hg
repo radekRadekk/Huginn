@@ -14,26 +14,41 @@
 // SELECT y;
 
 
-testowa_funkcja()[
-    DECLARE INTEGER xd 2137;
-    IF true[
-        SELECT xd;
-   ];
+// testowa_funkcja()[
+//     DECLARE INTEGER xd 2137;
+//     IF true[
+//         SELECT xd;
+//    ];
+// ];
+// 
+// CALL testowa_funkcja();
+// 
+// DECLARE INTEGER z 2137;
+// IF true[
+//     DECLARE REAL z 5.0;
+//     SELECT z;
+//     ASSIGN z 7.0;
+//     SELECT z;
+//     IF true[
+//         ASSIGN z [8.5 - 6.0];
+//         SELECT z;
+//     ];
+//     SELECT z;
+// ];
+// 
+// SELECT z;
+
+funkcja_param(INTEGER q | REAL r |)[
+    SELECT q;
+    SELECT r;
+    ASSIGN q 2137;
+    ASSIGN r [r * r];
 ];
 
-CALL testowa_funkcja();
+DECLARE INTEGER xx 12;
+DECLARE REAL yy 1.2;
 
-DECLARE INTEGER z 2137;
-IF true[
-    DECLARE REAL z 5.0;
-    SELECT z;
-    ASSIGN z 7.0;
-    SELECT z;
-    IF true[
-        ASSIGN z [8.5 - 6.0];
-        SELECT z;
-    ];
-    SELECT z;
-];
+CALL funkcja_param(xx | yy|);
 
-SELECT z;
+SELECT xx;
+SELECT yy;

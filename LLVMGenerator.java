@@ -148,23 +148,23 @@ class LLVMGenerator {
       main_text += "false" + b + ":\n";
    }
 
-   static void functionStart(String id){
+   static void functionStart(String id, String params){
       buffer = main_text;
       main_reg = reg;
-      main_text = "define i32 @"+id+"() nounwind {\n";
+      main_text = "define i32 @" + id + "(" + params + ") nounwind {\n";
       reg = 1;
    }
 
    static void functionEnd(){
-      main_text += "ret i32 %" + (reg-1) + "\n"; 
+      main_text += "ret i32 0\n"; 
       main_text += "}\n";
       header_text += main_text;
       main_text = buffer;
       reg = main_reg;
    }
 
-   static void call(String id){
-      main_text += "%" + reg + " = call i32 @" + id + "()\n";
+   static void call(String id, String params){
+      main_text += "%" + reg + " = call i32 @" + id + "("+params+")\n";
       reg++;
    }
 }

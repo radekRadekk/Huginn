@@ -11,6 +11,8 @@ public class LLVMActions extends HuginnBaseListener {
     HashSet<Block> blocks = new HashSet<Block>();
     Stack<Integer> blockIds = new Stack<Integer>();
     boolean isFunction = false;
+    boolean isFunction2 = false;
+    String functionID = "";
 
     public LLVMActions()
     {
@@ -19,6 +21,18 @@ public class LLVMActions extends HuginnBaseListener {
 
     private Variable getVariable(String ID, int blockId, boolean ignoreParents)
     {
+        if (isFunction)
+        {
+            Optional<Function> fun = functions.stream().filter(f -> f.name.equals(functionID)).findFirst();
+            if (fun.isPresent())
+            {
+                var variable = fun.get().parameters.stream().filter(p -> p.name.equals(ID)).findFirst();
+                if (variable.isPresent()){
+                    return new Variable(ID, variable.get().variableType, -1);
+                }
+            }   
+        }
+
         var variable = variables.stream().filter(v -> v.name.equals(ID) && v.blockId == blockId).findFirst();
 
         if (variable.isPresent())
@@ -627,39 +641,105 @@ public class LLVMActions extends HuginnBaseListener {
             raiseError(ctx.getStart().getLine(), "Function <" + ctx.ID().getText() + "> is already defined.");
         }
 
+        var params = "";
         var f = new Function(ctx.ID().getText());
         for (var p: ctx.parameter_def()) {
             VariableType vt = VariableType.BOOL;
 
-            if (p.INTEGER() != null)
+            if (p.INTEGER_NAME() != null) {
                 vt = VariableType.INTEGER;
-            if (p.REAL() != null)
+                params += ", i32* %";
+            }
+            if (p.REAL_NAME() != null) {
                 vt = VariableType.REAL;
-            if (p.BOOL() != null)
+                params += ", double* %";
+            }
+            if (p.BOOL_NAME() != null) {
                 vt = VariableType.BOOL;
+                params += ", i1* %";
+            }
         
+            params += p.ID().getText();
+            params += "-1";
             f.parameters.add(new Parameter(p.ID().getText(), vt));
         }
 
-        LLVMGenerator.functionStart(ctx.ID().getText());
+        if (!params.equals(""))
+            params = params.substring(1);
+
+        LLVMGenerator.functionStart(ctx.ID().getText(), params);
 
         isFunction = true;
+        isFunction2 = true;
+        functionID = ctx.ID().getText();
+
+        functions.add(f);
     }
 
     @Override public void exitFunction_def(HuginnParser.Function_defContext ctx) {
         LLVMGenerator.functionEnd();
 
         isFunction = false;
+        functionID = "";
     }
 
     @Override public void exitFunction_call(HuginnParser.Function_callContext ctx) {
-        //TODO checks etc.
-        LLVMGenerator.call(ctx.ID().getText());
+        Optional<Function> fun = functions.stream().filter(f -> f.name.equals(ctx.ID().getText())).findFirst();
+
+        if (!fun.isPresent()) {
+            raiseError(ctx.getStart().getLine(), "Function <" + ctx.ID().getText() + "> is not defined.");
+        }
+
+        if (fun.get().parameters.size() != ctx.parameter().size()) {
+            raiseError(ctx.getStart().getLine(), "Function <" + ctx.ID().getText() + "> called with wrong number of parameters.");
+        }
+
+        var i = 0;
+        for (var p: ctx.parameter()) {
+            var v = getVariable(p.ID().getText(), blockIds.peek(), false);
+            if (v == null) {
+                raiseError(ctx.getStart().getLine(), "Variable <" + p.ID().getText() + "> is not defined.");
+            }
+
+            if (fun.get().parameters.get(i).variableType != v.variableType) {
+                raiseError(ctx.getStart().getLine(), "Variable <" + p.ID().getText() + "> has wrong type.");
+            }
+
+            i++;
+        }
+
+        var params = "";
+        for (var p: ctx.parameter()) {
+            var v = getVariable(p.ID().getText(), blockIds.peek(), false);
+            
+            switch (v.variableType)
+            {
+                case INTEGER:
+                    params += ",i32* %";
+                    params += v.getName();
+                break;
+
+                case REAL:
+                    params += ",double* %";
+                    params += v.getName();
+                break;
+
+                case BOOL:
+                    params += ",i1* %";
+                    params += v.getName();
+                break;   
+            }
+        }
+
+        if (!params.equals(""))
+            params = params.substring(1);
+
+        LLVMGenerator.call(ctx.ID().getText(), params);
     }
 
     @Override public void enterBlock(HuginnParser.BlockContext ctx) {
         int parentId = -1;
-        if (!isFunction)
+        if (!isFunction2)
         {
             parentId = blockIds.peek();
         }
@@ -670,7 +750,7 @@ public class LLVMActions extends HuginnBaseListener {
         blockId++;
 
         blocks.add(block);
-        isFunction = false;
+        isFunction2 = false;
     }
 
 	@Override public void exitBlock(HuginnParser.BlockContext ctx) {
