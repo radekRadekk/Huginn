@@ -76,3 +76,38 @@ ASSIGN REAL a 4.0;
 ASSIGN mul_result [6.0 / a];
 ```
 
+----
+
+Instrukcja warunkowa IF:
+```
+IF <NAZWA/WARTOŚĆ> [
+    <OPERACJE>
+];
+```
+
+Blok wyznaczony nawiasami kwadratowymi zostanie wykonany tylko wtedy, gdy wartość będzie *true* lub gdy zmienna podana jako warunek będzie miała wartość *true*.
+
+Bloki IF mogą być zagnieżdżane.
+
+----
+
+Funkcje definiujemy w następujący sposób (przykład):
+```
+funkcja_param(INTEGER q | REAL r |)[
+    SELECT q;
+    SELECT r;
+    ASSIGN q 21;
+    ASSIGN r [r * r];
+];
+```
+a wywołujemy:
+```
+CALL funkcja_param(xx | yy|);
+```
+
+Zmienne przekazywane jako parametry są typu IN/OUT.
+
+----
+
+Kontekst zmiennych: zmienne definiowane dostępne są we wrzystkich blokach poniżej (np. blokach warunkowych if).
+Zmienne nie są dostępne w blokach będących rodzicem.
